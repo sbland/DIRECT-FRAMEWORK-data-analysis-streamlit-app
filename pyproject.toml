@@ -1,0 +1,35 @@
+[project]
+name = "direct-framework-data-analysis-streamlit-app"
+version = "0.1.0"
+description = "Streamlit app for showing DIRECT Framework data"
+readme = "README.md"
+authors = [
+  {name = "Sam Bland", email = "sbland.co.uk@gmail.com"}
+]
+license = {text = "GNU General Public License v3 (GPLv3)"}
+dependencies = [
+    "matplotlib>=3.11.0",
+    "seaborn>=0.13.2",
+    "streamlit>=1.59.0",
+]
+requires-python = ">=3.13"
+
+[dependency-groups]
+dev = [
+    { include-group = "lint" },
+    { include-group = "test" },
+]
+lint = [
+    "ruff",
+]
+test = [
+    "coverage",
+    "pytest",
+]
+
+
+[tool.ruff]
+line-length = 120
+
+[tool.uv]
+default-groups = ["dev"]

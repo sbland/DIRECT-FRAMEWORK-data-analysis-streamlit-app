@@ -67,4 +67,4 @@ EXPOSE 8000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-CMD ["uv", "run", "streamlit", "run", "direct_framework_data_analysis_streamlit_app/analyse_multi_user_data.py", "--server.port", "8000", "--server.address", "0.0.0.0"]
+CMD ["streamlit", "run", "direct_framework_data_analysis_streamlit_app/analyse_multi_user_data.py", "--server.port", "8000", "--server.address", "0.0.0.0"]

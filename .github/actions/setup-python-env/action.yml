@@ -1,0 +1,24 @@
+name: Setup Python Environment
+description: Installs Python and the required dependencies using UV
+inputs:
+  uv-extra-groups:
+    description: Extra uv groups to install
+    default: ""
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: "0.5.13"
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: Install dependencies
+      shell: bash
+      run: |
+        uv sync ${{ case(inputs.uv-extra-groups == '', '', format('--group {0}', inputs.uv-extra-groups)) }}

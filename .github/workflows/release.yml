@@ -1,0 +1,52 @@
+name: release new version and publish docker build to registry
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  preflight:
+    uses: ./.github/workflows/ci.yml
+  publish:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+        contents: write
+        packages: write
+        id-token: write
+    needs: preflight
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set tag name
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" != "push" ]]; then
+            tag=v$(date +%Y%m%d.%H%M%S)
+          else
+            tag=$(basename "${{ github.ref }}")
+          fi
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+      - name: Publish Docker build to ext repo
+        uses: ./.github/actions/docker-build
+        id: docker-build
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          publish: true
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag="${{ steps.tag.outputs.tag }}"
+          body="Automated release of version $tag \n ${{ steps.docker-build.outputs.tag }}"
+          gh release create --draft "$tag" --title "$tag" --notes "$body"
+
+      - name: Upload changelog to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag="${{ steps.tag.outputs.tag }}"
+          gh release upload "$tag" ./CHANGELOG.md

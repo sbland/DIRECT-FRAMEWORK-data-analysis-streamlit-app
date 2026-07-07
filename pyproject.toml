@@ -19,6 +19,10 @@ dev = [
     { include-group = "lint" },
     { include-group = "test" },
 ]
+ci = [
+    { include-group = "lint" },
+    { include-group = "test" },
+]
 lint = [
     "ruff",
 ]

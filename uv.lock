@@ -271,6 +271,11 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+ci = [
+    { name = "coverage" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
 dev = [
     { name = "coverage" },
     { name = "pytest" },
@@ -292,6 +297,11 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+ci = [
+    { name = "coverage" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
 dev = [
     { name = "coverage" },
     { name = "pytest" },

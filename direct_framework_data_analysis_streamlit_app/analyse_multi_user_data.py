@@ -8,6 +8,16 @@ import streamlit as st
 import os
 # %%
 
+st.image("https://n8cir.org.uk/static/bootstrap/image/n8cir-logo-v1-cropped-224x63.png")
+
+st.title("N8 CIR RSE Meetup 2026 - DIRECT Framework Data Analysis")
+st.text("Data analysis of the DIRECT Framework competency data collected from multiple users.")
+
+st.text(
+    "Users are asked to complete their competencies in the DIRECT Framework and then share their data via a Google Sheet. This app will analyse the data from multiple users and provide visualisations of the results."
+)
+
+st.link_button("Go to DIRECT Framework web app", "https://directframework.com/")
 # ENV VARS
 gsheetkey = os.environ.get("GSHEETKEY")
 sheet_name = os.environ.get("GSHEETNAME")
@@ -43,23 +53,39 @@ url = f"https://docs.google.com/spreadsheet/ccc?key={gsheetkey}&output=csv"
 input_df = pd.read_csv(url)
 
 # # %%
+columns = [
+    "user_id",
+    "category",
+    "skill_level",
+    "subcategory",
+    "Career Stage",
+    "Institution",
+    "Timestamp",
+]
 user_data = [
-    pd.DataFrame(
-        [{**v, "user_id": i, **row.to_dict()} for v in url_string_to_user_data(row["Paste your competency data"])]
-    )
+    (
+        pd.DataFrame(
+            [{**v, "user_id": i, **row.to_dict()} for v in url_string_to_user_data(row["Paste your competency data"])]
+        )
+    )[columns]
     for i, row in input_df.iterrows()
+    if row["Confirm you are happy for your data to be included anonymously in the dashboard"] == "Yes"
 ]
 # %%
 all_user_df = pd.concat(user_data, ignore_index=True)
-st.write("All User Data")
-st.write(all_user_df.head(5))
-# %%
+st.header("All Skill Data")
 
+st.dataframe(all_user_df)
+st.download_button("Download All Skill Data as CSV", all_user_df.to_csv(index=False), "all_user_data.csv", "text/csv")
+# %%
+st.header("Skill data visualisations")
 # %%
 # Create a matrix where rows are levels and columns are categories, and the values are the average skill levels for each user
-matrix = all_user_df.pivot_table(
+matrix = all_user_df[["skill_level", "category", "user_id"]].pivot_table(
     index="skill_level", columns="category", values="user_id", aggfunc="count", fill_value=0
 )
+# reverse the order of the rows in the matrix so that the highest skill level is at the top
+matrix = matrix.iloc[::-1]
 # %%
 fig, ax = plt.subplots()
 st.write("Skill Level Distribution Across Categories")
@@ -70,4 +96,5 @@ plt.title("Skill Level Distribution Across Categories")
 st.write(fig)
 
 # %%
-# TODO: Create a matrix for each institution
+
+st.dataframe(all_user_df[all_user_df["skill_level"] == 2][all_user_df["category"] == "Communication"])

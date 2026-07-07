@@ -56,8 +56,6 @@ RUN chown -R nonroot:nonroot /app \
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-RUN python manage.py collectstatic --noinput
-
 RUN chmod +x /app/entrypoint.sh
 
 # RUN chown -R nobody:nogroup /usr/src/app \

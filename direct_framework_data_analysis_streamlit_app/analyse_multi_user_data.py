@@ -14,6 +14,7 @@ assert gsheetkey is not None, "GSHEETKEY environment variable is not set."
 
 # Utils
 
+
 def url_string_to_user_data(url_string: str) -> dict:
     """
     Convert a URL string to a dictionary of user data.
@@ -53,6 +54,7 @@ def get_user_data_from_gsheet(gsheetkey: str) -> pd.DataFrame:
 
     columns = [
         "user_id",
+        "skill",
         "category",
         "skill_level",
         "subcategory",
@@ -63,7 +65,10 @@ def get_user_data_from_gsheet(gsheetkey: str) -> pd.DataFrame:
     user_data = [
         (
             pd.DataFrame(
-                [{**v, "user_id": i, **row.to_dict()} for v in url_string_to_user_data(row["Paste your competency data"])]
+                [
+                    {**v, "user_id": i, **row.to_dict()}
+                    for v in url_string_to_user_data(row["Paste your competency data"])
+                ]
             )
         )[columns]
         for i, row in input_df.iterrows()
@@ -71,6 +76,7 @@ def get_user_data_from_gsheet(gsheetkey: str) -> pd.DataFrame:
     ]
     all_user_df = pd.concat(user_data, ignore_index=True)
     return all_user_df
+
 
 # %%
 
@@ -83,9 +89,8 @@ st.image("https://n8cir.org.uk/static/bootstrap/image/n8cir-logo-v1-cropped-224x
 
 st.title("N8 CIR RSE Meetup 2026 - DIRECT Framework Data Analysis")
 
-
-
 # == Plot functions ==
+
 
 def plot_skill_level_category_distribution(df):
     # Create a matrix where rows are levels and columns are categories, and the values are the average skill levels for each user
@@ -97,11 +102,13 @@ def plot_skill_level_category_distribution(df):
 
     fig, ax = plt.subplots()
     st.write("Skill Level Distribution Across Categories")
+    st.write("Aggregated to all institutions and top level categories")
     sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", ax=ax, cbar=False)
     plt.xlabel("Category")
     plt.ylabel("Skill Level")
     plt.title("Skill Level Distribution Across Categories")
     st.write(fig)
+
 
 def plot_skill_level_subcategory_distribution(df):
     """Plots the distribution of skill levels across subcategories.
@@ -129,6 +136,41 @@ def plot_skill_level_subcategory_distribution(df):
         ax.set_ylabel("Skill Level")
         columns[i].write(cat)
         columns[i].write(fig)
+
+
+def plot_skill_level_subskill_distribution(df):
+    """Plots the distribution of skill levels across subcategories.
+
+    The subcategories are grouped by category on the x axis, and the skill levels are represented by different colors in the bars. The height of each bar represents the number of users with that skill level in that subcategory.
+
+    """
+    # Create a matrix where rows are levels and columns are subcategories, and the values are the average skill levels for each user
+    categories = df["category"].unique()
+    st.header("Skill Level Distribution Across Subcategories")
+    max_val = df.groupby(["category", "subcategory", "skill_level"]).size().max()
+    for i, cat in enumerate(categories):
+        st.header(f"Category: {cat}")
+        df_cat = df[df["category"] == cat]
+        subcategories = df_cat["subcategory"].unique()
+        columns = st.columns(len(subcategories))
+        for j, subcat in enumerate(subcategories):
+            st.header(f"Sub Category: {subcat}")
+            fig, ax = plt.subplots(figsize=(4, 6))
+
+            df_subcat = df_cat[df_cat["subcategory"] == subcat]
+
+            matrix = df_subcat[["skill_level", "skill", "user_id"]].pivot_table(
+                index="skill_level", columns="skill", values="user_id", aggfunc="count", fill_value=0
+            )
+            # reverse the order of the rows in the matrix so that the highest skill level is at the top
+            matrix = matrix.iloc[::-1]
+
+            sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", ax=ax, cbar=False, square=True, vmin=0, vmax=max_val)
+            ax.set_xlabel(subcat)
+            ax.set_ylabel("Skill Level")
+            columns[j].write(subcat)
+            columns[j].write(fig)
+
 
 def plot_skill_level_subcategory_distribution_per_institution(df):
     """Plots the distribution of skill levels across subcategories.
@@ -159,6 +201,7 @@ def plot_skill_level_subcategory_distribution_per_institution(df):
             columns[i].write(cat)
             columns[i].write(fig)
 
+
 # == Pages ==
 
 
@@ -172,27 +215,37 @@ def intro_page():
     st.link_button("Go to DIRECT Framework web app", "https://directframework.com/")
 
 
-
 def raw_data_page():
     st.header("Raw Data")
     st.dataframe(all_user_df)
-    st.download_button("Download All Skill Data as CSV", all_user_df.to_csv(index=False), "all_user_data.csv", "text/csv")
+    st.download_button(
+        "Download All Skill Data as CSV", all_user_df.to_csv(index=False), "all_user_data.csv", "text/csv"
+    )
 
 
-def skill_data_visualisations_page():
-    # %%
+def top_aggregation_page():
     st.header("Skill data visualisations")
     plot_skill_level_category_distribution(all_user_df)
+
+
+def granular_data_page():
+    st.header("Skill data visualisations")
     plot_skill_level_subcategory_distribution(all_user_df)
+    plot_skill_level_subskill_distribution(all_user_df)
+
+
+def institution_page():
+    st.header("Skill data visualisations")
     plot_skill_level_subcategory_distribution_per_institution(all_user_df)
 
 
 page_names_to_funcs = {
     "Intro": intro_page,
     "Raw Data": raw_data_page,
-    "Skill Data Visualisations": skill_data_visualisations_page,
+    "Top level aggregation": top_aggregation_page,
+    "Per institution": institution_page,
+    "Granular data": granular_data_page,
 }
-
 
 
 # Setup  Sidebar

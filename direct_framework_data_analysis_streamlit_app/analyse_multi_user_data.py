@@ -125,7 +125,7 @@ def plot_skill_level_subcategory_distribution(df):
         matrix = matrix.iloc[::-1]
 
         sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", ax=ax, cbar=False, square=True, vmin=0, vmax=max_val)
-        ax.set_xlabel("Sub categories")
+        ax.set_xlabel(cat)
         ax.set_ylabel("Skill Level")
         columns[i].write(cat)
         columns[i].write(fig)
@@ -154,7 +154,7 @@ def plot_skill_level_subcategory_distribution_per_institution(df):
             matrix = matrix.iloc[::-1]
 
             sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", ax=ax, cbar=False, square=True, vmin=0, vmax=max_val)
-            ax.set_xlabel("Sub categories")
+            ax.set_xlabel(cat)
             ax.set_ylabel("Skill Level")
             columns[i].write(cat)
             columns[i].write(fig)

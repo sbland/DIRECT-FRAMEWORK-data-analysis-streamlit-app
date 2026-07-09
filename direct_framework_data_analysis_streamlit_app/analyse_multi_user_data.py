@@ -147,7 +147,7 @@ def plot_skill_level_subskill_distribution(df):
     # Create a matrix where rows are levels and columns are subcategories, and the values are the average skill levels for each user
     categories = df["category"].unique()
     st.header("Skill Level Distribution Across Subcategories")
-    max_val = df.groupby(["category", "subcategory", "skill_level"]).size().max()
+    max_val = df.groupby(["category", "subcategory", "skill_level", "skill"]).size().max()
     for i, cat in enumerate(categories):
         st.header(f"Category: {cat}")
         df_cat = df[df["category"] == cat]
@@ -224,18 +224,18 @@ def raw_data_page():
 
 
 def top_aggregation_page():
-    st.header("Skill data visualisations")
+    st.header("Top Level Visualisations")
     plot_skill_level_category_distribution(all_user_df)
 
 
 def granular_data_page():
-    st.header("Skill data visualisations")
+    st.header("Granular Visualisations")
     plot_skill_level_subcategory_distribution(all_user_df)
     plot_skill_level_subskill_distribution(all_user_df)
 
 
 def institution_page():
-    st.header("Skill data visualisations")
+    st.header("Institutional Visualisations")
     plot_skill_level_subcategory_distribution_per_institution(all_user_df)
 
 

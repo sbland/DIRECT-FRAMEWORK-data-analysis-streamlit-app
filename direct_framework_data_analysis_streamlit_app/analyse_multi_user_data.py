@@ -217,9 +217,18 @@ def intro_page():
 
 def raw_data_page():
     st.header("Raw Data")
-    st.dataframe(all_user_df)
+    # These are purposely split to avoid users being identifiable
+    st.text("Data with Institution")
+    data_with_institution = all_user_df[["category", "subcategory", "skill", "skill_level", "Institution"]]
+    st.dataframe(data_with_institution)
     st.download_button(
-        "Download All Skill Data as CSV", all_user_df.to_csv(index=False), "all_user_data.csv", "text/csv"
+        "Download skill data with institution CSV", all_user_df.to_csv(index=False), "all_user_data.csv", "text/csv"
+    )
+    data_with_career_stage = all_user_df[["category", "subcategory", "skill", "skill_level", "Career Stage"]]
+    st.text("Data with career stage")
+    st.dataframe(data_with_career_stage)
+    st.download_button(
+        "Download skill data with career stage CSV", all_user_df.to_csv(index=False), "all_user_data.csv", "text/csv"
     )
 
 
